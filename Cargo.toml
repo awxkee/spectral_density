@@ -1,0 +1,22 @@
+[package]
+name = "spectral_density"
+version = "0.1.0"
+edition = "2024"
+description = "Spectral density"
+readme = "README.md"
+keywords = ["dsp"]
+license = "BSD-3-Clause OR Apache-2.0"
+authors = ["Radzivon Bartoshyk"]
+documentation = "https://github.com/awxkee/spectral_density"
+categories = ["algorithms", "science"]
+homepage = "https://github.com/awxkee/spectral_density"
+repository = "https://github.com/awxkee/spectral_density"
+exclude = ["*.jpg", "/assets", "*.png", "*.sh", "/assets/*"]
+rust-version = "1.89.0"
+
+[dependencies]
+detrend = "0.1.1"
+num-traits = "0.2.19"
+pxwindow = "0.1.1"
+num-complex = "0.4.6"
+zaft = "0.2.3"

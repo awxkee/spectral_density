@@ -1,6 +1,6 @@
 [package]
 name = "spectral_density"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Spectral density"
 readme = "README.md"
@@ -19,4 +19,4 @@ detrend = "0.1.1"
 num-traits = "0.2.19"
 pxwindow = "0.1.1"
 num-complex = "0.4.6"
-zaft = "0.2.3"
+zaft = "0.3.1"

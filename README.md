@@ -21,3 +21,12 @@ The core functionality is exposed through public wrappers for `f32` and `f64` da
 ## ⚙️ Public Functions and Parameters
 
 The primary entry points are the type-specific functions: `welch_f32` and `welch_f64`.
+
+-----
+
+This project is licensed under either of
+
+- BSD-3-Clause License (see [LICENSE](LICENSE.md))
+- Apache License, Version 2.0 (see [LICENSE](LICENSE-APACHE.md))
+
+at your option.

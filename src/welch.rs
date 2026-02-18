@@ -115,6 +115,7 @@ where
 
     // Determine number of segments
     let step = window_length - window_no_overlapping_length;
+    #[allow(unknown_lints)]
     #[allow(clippy::manual_checked_ops)]
     let num_segments = if step > 0 {
         (input.len() - window_no_overlapping_length) / step

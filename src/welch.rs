@@ -73,7 +73,7 @@ where
     // Default parameters
     let window_length = data.nperseg;
     let window_no_overlapping_length = data.noverlap;
-    let fft_size = data.fft_size;
+    let fft_size = data.fft_size.unwrap_or(window_length);
     let detrend_val = data.detrend;
     let scaling_val = data.scaling;
 

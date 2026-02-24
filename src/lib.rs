@@ -45,7 +45,7 @@ pub struct Welch<'a, T> {
     pub window: WelchWindow,
     pub nperseg: usize,
     pub noverlap: usize,
-    pub fft_size: usize,
+    pub fft_size: Option<usize>,
     pub detrend: DetrendingMethod,
     pub scaling: ScalingMethod,
 }
@@ -60,7 +60,7 @@ impl<'a> Welch<'a, f32> {
             window: WelchWindow::Hann,
             nperseg,
             noverlap: nperseg / 2,
-            fft_size: nperseg,
+            fft_size: None,
             detrend: DetrendingMethod::Constant,
             scaling: ScalingMethod::Density,
         }
@@ -87,7 +87,7 @@ impl<'a> Welch<'a, f32> {
     }
 
     pub fn nfft(mut self, n: usize) -> Self {
-        self.fft_size = n;
+        self.fft_size = Some(n);
         self
     }
 

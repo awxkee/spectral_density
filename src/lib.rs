@@ -40,14 +40,14 @@ use std::sync::Arc;
 use zaft::{FftExecutor, Zaft};
 
 pub struct Welch<'a, T> {
-    input: &'a [T],
-    fs: f64,
-    window: WelchWindow,
-    nperseg: usize,
-    noverlap: usize,
-    fft_size: usize,
-    detrend: DetrendingMethod,
-    scaling: ScalingMethod,
+    pub input: &'a [T],
+    pub fs: f64,
+    pub window: WelchWindow,
+    pub nperseg: usize,
+    pub noverlap: usize,
+    pub fft_size: usize,
+    pub detrend: DetrendingMethod,
+    pub scaling: ScalingMethod,
 }
 
 impl<'a> Welch<'a, f32> {

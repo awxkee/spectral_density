@@ -28,8 +28,7 @@
  */
 use crate::err::{SpectralError, try_vec};
 use crate::mla::fmla;
-use crate::{ScalingMethod, Welch, WelchSample, WelchWindow};
-use detrend::DetrendingMethod;
+use crate::{ScalingMethod, Welch, WelchSample};
 use num_complex::Complex;
 use num_traits::{AsPrimitive, Zero};
 
@@ -230,6 +229,8 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::WelchWindow;
+    use detrend::DetrendingMethod;
 
     #[test]
     fn test_f32() {

@@ -28,7 +28,7 @@
  */
 use crate::err::{SpectralError, try_vec};
 use crate::mla::fmla;
-use crate::{ScalingMethod, WelchSample, WelchWindow};
+use crate::{ScalingMethod, Welch, WelchSample, WelchWindow};
 use detrend::DetrendingMethod;
 use num_complex::Complex;
 use num_traits::{AsPrimitive, Zero};
@@ -59,14 +59,7 @@ pub struct WelchResult<T> {
 }
 
 pub(crate) fn welch_impl<T: WelchSample>(
-    input: &[T],
-    fs: Option<f64>,
-    window: Option<WelchWindow>,
-    nperseg: Option<usize>,
-    noverlap: Option<usize>,
-    nfft: Option<usize>,
-    detrend: Option<DetrendingMethod>,
-    scaling: Option<ScalingMethod>,
+    data: &Welch<'_, T>,
 ) -> Result<WelchResult<T>, SpectralError>
 where
     f64: AsPrimitive<T>,
@@ -74,21 +67,20 @@ where
     i64: AsPrimitive<T>,
 {
     // Validate input
-    if input.is_empty() {
+    if data.input.is_empty() {
         return Err(SpectralError::ZeroSizedInput);
     }
 
     // Default parameters
-    let fs_val = fs.unwrap_or(1.0);
-    let window_length = nperseg.unwrap_or(256.min(input.len()));
-    let window_no_overlapping_length = noverlap.unwrap_or(window_length / 2);
-    let fft_size = nfft.unwrap_or(window_length);
-    let detrend_val = detrend.unwrap_or(DetrendingMethod::Constant);
-    let scaling_val = scaling.unwrap_or(ScalingMethod::Density);
+    let window_length = data.nperseg;
+    let window_no_overlapping_length = data.noverlap;
+    let fft_size = data.fft_size;
+    let detrend_val = data.detrend;
+    let scaling_val = data.scaling;
 
     // Validate parameters
-    if fs_val <= 0.0 {
-        return Err(SpectralError::NegativeSamplingFrequency(fs_val));
+    if data.fs <= 0.0 {
+        return Err(SpectralError::NegativeSamplingFrequency(data.fs));
     }
 
     if fft_size < window_length {
@@ -103,7 +95,7 @@ where
     }
 
     // Create window function
-    let win = T::get_window(window.unwrap_or(WelchWindow::Hann), window_length);
+    let win = T::get_window(data.window, window_length);
     let win_scale: T = {
         let mut x = T::zero();
         for &v in win.iter() {
@@ -118,7 +110,7 @@ where
     #[allow(unknown_lints)]
     #[allow(clippy::manual_checked_ops)]
     let num_segments = if step > 0 {
-        (input.len() - window_no_overlapping_length) / step
+        (data.input.len() - window_no_overlapping_length) / step
     } else {
         0
     };
@@ -128,7 +120,7 @@ where
     }
 
     // Calculate frequency bins
-    let freqs = fftfreq(fft_size, 1.0f64.as_() / fs_val.as_())?;
+    let freqs = fftfreq(fft_size, 1.0f64.as_() / data.fs.as_())?;
 
     // Keep only positive frequencies
     let n_half = (fft_size / 2) + 1; // Handle both even and odd nfft
@@ -144,12 +136,12 @@ where
         let start = i * step;
         let end = start + window_length;
 
-        if end > input.len() {
+        if end > data.input.len() {
             break;
         }
 
         // Extract segment
-        let segment = input[start..end].to_vec();
+        let segment = data.input[start..end].to_vec();
 
         // Detrend the segment
         let detrended = T::detrend(&segment, detrend_val)?;
@@ -174,7 +166,7 @@ where
             .execute(&mut spectrum)
             .map_err(|x| SpectralError::FftError(x.to_string()))?;
 
-        let freq_scaling: T = scale / (fs_val.as_());
+        let freq_scaling: T = scale / (data.fs.as_());
 
         // Compute periodogram for this segment
         let mut segment_psd: Vec<T> = spectrum
@@ -224,7 +216,7 @@ where
         ScalingMethod::Density => psd_avg,
         ScalingMethod::Spectrum => {
             // "spectrum" - multiply by sampling frequency
-            let fs_val_s: T = fs_val.as_();
+            let fs_val_s: T = data.fs.as_();
             psd_avg.iter().map(|&p| p * fs_val_s).collect()
         }
     };
@@ -263,14 +255,12 @@ mod tests {
             0.8747677, -1.8722727,
         ];
         let q = welch_impl::<f32>(
-            &arr,
-            Some(4.0),
-            Some(WelchWindow::Hann),
-            Some(128),
-            Some(64),
-            None,
-            Some(DetrendingMethod::Constant),
-            None,
+            &Welch::new(&arr)
+                .fs(4.0)
+                .window(WelchWindow::Hann)
+                .nperseg(128)
+                .noverlap(64)
+                .detrend(DetrendingMethod::Constant),
         )
         .unwrap();
         println!("{:?}", q.frequencies);
@@ -301,14 +291,12 @@ mod tests {
             0.8747677, -1.8722727, -0.52321, 0.433121, -0.7260625,
         ];
         let q = welch_impl::<f32>(
-            &arr,
-            Some(4.0),
-            Some(WelchWindow::Hann),
-            Some(128),
-            Some(64),
-            None,
-            Some(DetrendingMethod::Constant),
-            None,
+            &Welch::new(&arr)
+                .fs(4.0)
+                .window(WelchWindow::Hann)
+                .nperseg(128)
+                .noverlap(64)
+                .detrend(DetrendingMethod::Constant),
         )
         .unwrap();
         println!("{:?}", q.frequencies);

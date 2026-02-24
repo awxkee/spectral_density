@@ -39,6 +39,69 @@ use std::ops::{AddAssign, MulAssign};
 use std::sync::Arc;
 use zaft::{FftExecutor, Zaft};
 
+pub struct Welch<'a, T> {
+    input: &'a [T],
+    fs: f64,
+    window: WelchWindow,
+    nperseg: usize,
+    noverlap: usize,
+    fft_size: usize,
+    detrend: DetrendingMethod,
+    scaling: ScalingMethod,
+}
+
+impl<'a> Welch<'a, f32> {
+    pub fn new(input: &'a [f32]) -> Self {
+        let nperseg = 256.min(input.len());
+
+        Self {
+            input,
+            fs: 1.0,
+            window: WelchWindow::Hann,
+            nperseg,
+            noverlap: nperseg / 2,
+            fft_size: nperseg,
+            detrend: DetrendingMethod::Constant,
+            scaling: ScalingMethod::Density,
+        }
+    }
+
+    pub fn fs(mut self, fs: f64) -> Self {
+        self.fs = fs;
+        self
+    }
+
+    pub fn window(mut self, window: WelchWindow) -> Self {
+        self.window = window;
+        self
+    }
+
+    pub fn nperseg(mut self, n: usize) -> Self {
+        self.nperseg = n;
+        self
+    }
+
+    pub fn noverlap(mut self, n: usize) -> Self {
+        self.noverlap = n;
+        self
+    }
+
+    pub fn nfft(mut self, n: usize) -> Self {
+        self.fft_size = n;
+        self
+    }
+
+    pub fn detrend(mut self, method: DetrendingMethod) -> Self {
+        self.detrend = method;
+        self
+    }
+
+    pub fn scaling(mut self, scaling: ScalingMethod) -> Self {
+        self.scaling = scaling;
+        self
+    }
+}
+
 /// Represents the available window functions for use in Welch's method.
 #[derive(Debug, Copy, Clone, PartialEq, Hash, Ord, PartialOrd, Eq)]
 pub enum WelchWindow {
@@ -81,17 +144,8 @@ pub use welch::WelchResult;
 ///
 /// A `Result` containing the frequencies and the computed power spectral density/spectrum,
 /// or a `SpectralError` if validation fails.
-pub fn welch_f32(
-    input: &[f32],
-    fs: Option<f64>,
-    window: Option<WelchWindow>,
-    nperseg: Option<usize>,
-    noverlap: Option<usize>,
-    nfft: Option<usize>,
-    detrend: Option<DetrendingMethod>,
-    scaling: Option<ScalingMethod>,
-) -> Result<WelchResult<f32>, SpectralError> {
-    welch_impl(input, fs, window, nperseg, noverlap, nfft, detrend, scaling)
+pub fn welch_f32(welch: &Welch<f32>) -> Result<WelchResult<f32>, SpectralError> {
+    welch_impl(welch)
 }
 
 /// Computes the Power Spectral Density (PSD) or Power Spectrum of a signal
@@ -107,17 +161,8 @@ pub fn welch_f32(
 ///
 /// A `Result` containing the frequencies and the computed power spectral density/spectrum,
 /// or a `SpectralError` if validation fails.
-pub fn welch_f64(
-    input: &[f64],
-    fs: Option<f64>,
-    window: Option<WelchWindow>,
-    nperseg: Option<usize>,
-    noverlap: Option<usize>,
-    nfft: Option<usize>,
-    detrend: Option<DetrendingMethod>,
-    scaling: Option<ScalingMethod>,
-) -> Result<WelchResult<f64>, SpectralError> {
-    welch_impl(input, fs, window, nperseg, noverlap, nfft, detrend, scaling)
+pub fn welch_f64(welch: &Welch<f64>) -> Result<WelchResult<f64>, SpectralError> {
+    welch_impl(welch)
 }
 
 pub(crate) trait WelchSample:

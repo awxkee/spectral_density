@@ -50,8 +50,8 @@ pub struct Welch<'a, T> {
     pub scaling: ScalingMethod,
 }
 
-impl<'a> Welch<'a, f32> {
-    pub fn new(input: &'a [f32]) -> Self {
+impl<'a, T> Welch<'a, T> {
+    pub fn new(input: &'a [T]) -> Self {
         let nperseg = 256.min(input.len());
 
         Self {

@@ -102,7 +102,7 @@ where
         }
         x
     };
-    let scale = 1.0f64.as_() / win_scale;
+    let scale = win.len().as_() / (win_scale * fft_size.as_());
 
     // Determine number of segments
     let step = window_length - window_no_overlapping_length;
@@ -174,7 +174,7 @@ where
             .map(|&c| fmla(c.re, c.re, c.im * c.im) * freq_scaling)
             .collect();
 
-        let two = 2.0f64.as_();
+        const TWO: f64 = 2.0f64;
 
         // Loop from the 1st element (index 1) up to the second-to-last element (Nyquist or one before)
         // Note: For N=64, n_half=33. Indices 1..32 are non-DC, non-Nyquist.
@@ -189,7 +189,7 @@ where
         for j in 1..end_index {
             if j < segment_psd.len() {
                 unsafe {
-                    *segment_psd.get_unchecked_mut(j) *= two;
+                    *segment_psd.get_unchecked_mut(j) *= TWO.as_();
                 }
             }
         }
@@ -206,16 +206,18 @@ where
 
     // Normalize by number of segments
     let segment_scaling = 1f64.as_() / num_segments.as_();
-    for psd in &mut psd_avg {
-        *psd *= segment_scaling;
-    }
 
     // Apply scaling
     let result_psd = match scaling_val {
-        ScalingMethod::Density => psd_avg,
+        ScalingMethod::Density => {
+            for psd in &mut psd_avg {
+                *psd *= segment_scaling;
+            }
+            psd_avg
+        }
         ScalingMethod::Spectrum => {
             // "spectrum" - multiply by sampling frequency
-            let fs_val_s: T = data.fs.as_();
+            let fs_val_s: T = data.fs.as_() * segment_scaling;
             psd_avg.iter().map(|&p| p * fs_val_s).collect()
         }
     };

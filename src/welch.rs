@@ -102,7 +102,7 @@ where
         }
         x
     };
-    let scale = win.len().as_() / (win_scale * fft_size.as_());
+    let scale = 1.0f64.as_() / win_scale;
 
     // Determine number of segments
     let step = window_length - window_no_overlapping_length;

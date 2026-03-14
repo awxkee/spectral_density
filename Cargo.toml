@@ -2,7 +2,7 @@
 name = "spectral_density"
 version = "0.2.4"
 edition = "2024"
-description = "Spectral density"
+description = "Spectrum density using hilbert transform"
 readme = "README.md"
 keywords = ["dsp"]
 license = "BSD-3-Clause OR Apache-2.0"

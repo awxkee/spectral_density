@@ -270,6 +270,76 @@ mod tests {
         println!("{:?}", q.psd);
     }
 
+    /// Reference: `scipy.signal.welch(x, fs=1.0, nperseg=32)` and `nperseg=31` with
+    /// `x = sin(2π·0.1n) + 0.5·sin(2π·0.25n) + 0.1·cos(2π·0.4n)`, n < 64
+    /// (SciPy defaults: periodic Hann, noverlap = nperseg // 2, constant detrend, density).
+    #[test]
+    fn periodic_hann_matches_scipy_welch() {
+        let x: Vec<f64> = (0..64)
+            .map(|n| {
+                let t = n as f64;
+                (2.0 * std::f64::consts::PI * 0.1 * t).sin()
+                    + 0.5 * (2.0 * std::f64::consts::PI * 0.25 * t).sin()
+                    + 0.1 * (2.0 * std::f64::consts::PI * 0.4 * t).cos()
+            })
+            .collect();
+        let expected_32 = [
+            5.7983542331390046e-02,
+            8.6928360836290523e-03,
+            1.3438777005865923e+00,
+            1.0121833640018449e+01,
+            4.5046805826914911e+00,
+            2.2835771156028379e-02,
+            1.0010197559243679e-03,
+            6.6539880674305785e-01,
+            2.6683675632912731e+00,
+            6.6592062383971073e-01,
+            1.7908481113262401e-05,
+            2.4486501077641316e-04,
+            4.4871602368889173e-02,
+            1.0148441401316056e-01,
+            1.3317058022619408e-02,
+            4.6238889099821646e-05,
+            2.1933068173521191e-06,
+        ];
+        let expected_31 = [
+            2.1802589033325284e-02,
+            5.0476096740899989e-03,
+            1.8751899013528892e+00,
+            1.0198153089356870e+01,
+            3.4207957926942552e+00,
+            4.3736854431038604e-03,
+            1.0194951335291825e-02,
+            1.2155824821380927e+00,
+            2.3830768222811494e+00,
+            2.6418566678987776e-01,
+            1.5022814575844365e-03,
+            5.0221298748636747e-03,
+            8.4566089472014369e-02,
+            6.3876620918685206e-02,
+            1.5699880324464904e-03,
+            5.9361610396582071e-05,
+        ];
+        for (nperseg, expected) in [(32usize, &expected_32[..]), (31, &expected_31[..])] {
+            let q = welch_impl::<f64>(
+                &Welch::new(&x)
+                    .fs(1.0)
+                    .window(WelchWindow::HannPeriodic)
+                    .nperseg(nperseg)
+                    .noverlap(nperseg / 2)
+                    .detrend(DetrendingMethod::Constant),
+            )
+            .unwrap();
+            assert_eq!(q.psd.len(), expected.len());
+            for (i, (g, e)) in q.psd.iter().zip(expected).enumerate() {
+                assert!(
+                    (g - e).abs() <= 1e-12 * e.abs().max(1.0),
+                    "nperseg {nperseg} bin {i}: got {g}, expected {e}"
+                );
+            }
+        }
+    }
+
     #[test]
     fn test_f32_2() {
         let arr = [

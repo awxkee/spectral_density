@@ -13,6 +13,7 @@ The core functionality is exposed through public wrappers for `f32` and `f64` da
     * `WelchWindow::Hann`
     * `WelchWindow::Hamming`
     * `WelchWindow::Blackman`
+    * `WelchWindow::HannPeriodic`, `WelchWindow::HammingPeriodic`, `WelchWindow::BlackmanPeriodic` — SciPy's default (`sym=False`) windows
 * **Detrending:** Supports removing DC offsets (`DetrendingMethod::Constant`) or linear trends (`DetrendingMethod::Linear`) from each segment.
 * **Scaling Control:** Configure the output as either:
     * **Power Spectral Density (`Density`):** Units of Power/Hz.

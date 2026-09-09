@@ -1,6 +1,6 @@
 [package]
 name = "spectral_density"
-version = "0.2.4"
+version = "0.2.5"
 edition = "2024"
 description = "Spectrum density using hilbert transform"
 readme = "README.md"
@@ -17,6 +17,6 @@ rust-version = "1.89.0"
 [dependencies]
 detrend = "0.1.1"
 num-traits = "0.2.19"
-pxwindow = "0.1.1"
+pxwindow = "0.1.4"
 num-complex = "0.4.6"
-zaft = "0.3.1"
+zaft = "0.3.15"

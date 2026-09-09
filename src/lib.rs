@@ -105,12 +105,19 @@ impl<'a, T> Welch<'a, T> {
 /// Represents the available window functions for use in Welch's method.
 #[derive(Debug, Copy, Clone, PartialEq, Hash, Ord, PartialOrd, Eq)]
 pub enum WelchWindow {
-    /// The Hann window function.
+    /// The symmetric Hann window function.
     Hann,
-    /// The Hamming window function.
+    /// The symmetric Hamming window function.
     Hamming,
-    /// The Blackman window function.
+    /// The symmetric Blackman window function.
     Blackman,
+    /// The periodic ("DFT-even") Hann window — what `scipy.signal.welch`
+    /// uses by default (`get_window('hann', nperseg)`).
+    HannPeriodic,
+    /// The periodic Hamming window (`get_window('hamming', nperseg)`).
+    HammingPeriodic,
+    /// The periodic Blackman window (`get_window('blackman', nperseg)`).
+    BlackmanPeriodic,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Hash, Ord, PartialOrd, Eq)]
@@ -193,6 +200,9 @@ impl WindowGenerator for f32 {
             WelchWindow::Hann => pxwindow::Pxwindow::hann_f32(n),
             WelchWindow::Hamming => pxwindow::Pxwindow::hamming_f32(n),
             WelchWindow::Blackman => pxwindow::Pxwindow::blackman_f32(n),
+            WelchWindow::HannPeriodic => pxwindow::Pxwindow::hann_periodic_f32(n),
+            WelchWindow::HammingPeriodic => pxwindow::Pxwindow::hamming_periodic_f32(n),
+            WelchWindow::BlackmanPeriodic => pxwindow::Pxwindow::blackman_periodic_f32(n),
         }
     }
 }
@@ -203,6 +213,9 @@ impl WindowGenerator for f64 {
             WelchWindow::Hann => pxwindow::Pxwindow::hann_f64(n),
             WelchWindow::Hamming => pxwindow::Pxwindow::hamming_f64(n),
             WelchWindow::Blackman => pxwindow::Pxwindow::blackman_f64(n),
+            WelchWindow::HannPeriodic => pxwindow::Pxwindow::hann_periodic_f64(n),
+            WelchWindow::HammingPeriodic => pxwindow::Pxwindow::hamming_periodic_f64(n),
+            WelchWindow::BlackmanPeriodic => pxwindow::Pxwindow::blackman_periodic_f64(n),
         }
     }
 }
